@@ -75,7 +75,7 @@
     .day-pill{flex-shrink:0;display:flex;flex-direction:column;align-items:center;
       padding:9px 12px;gap:3px;background:var(--surface);border:1px solid var(--border);
       border-radius:14px;cursor:pointer;transition:all .15s;user-select:none}
-    .day-pill .dp-num{font-family:'Bebas Neue',sans-serif;font-size:21px;color:var(--muted);line-height:1}
+    .day-pill .dp-num{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--muted);line-height:1}
     .day-pill .dp-lbl{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:1px;color:var(--muted)}
     .day-pill.on{background:var(--ad);border-color:var(--accent);box-shadow:0 0 12px rgba(var(--accent-rgb),.14)}
     .day-pill.on .dp-num,.day-pill.on .dp-lbl{color:var(--accent)}
@@ -261,11 +261,11 @@
     <!-- WORKOUT -->
     <section id="panel-workout" class="panel on">
       <div id="day-strip">
-        <div class="day-pill on" data-day="0" onclick="selectDay(0)"><span class="dp-num">1</span><span class="dp-lbl">PUSH</span></div>
-        <div class="day-pill"    data-day="1" onclick="selectDay(1)"><span class="dp-num">2</span><span class="dp-lbl">PULL</span></div>
-        <div class="day-pill"    data-day="2" onclick="selectDay(2)"><span class="dp-num">3</span><span class="dp-lbl">SHLDRS</span></div>
-        <div class="day-pill"    data-day="3" onclick="selectDay(3)"><span class="dp-num">4</span><span class="dp-lbl">COMBO</span></div>
-        <div class="day-pill"    data-day="4" onclick="selectDay(4)"><span class="dp-num">5</span><span class="dp-lbl">ARMS</span></div>
+        <div class="day-pill on" data-day="0" onclick="selectDay(0)"><span class="dp-num">MON</span><span class="dp-lbl">PUSH</span></div>
+        <div class="day-pill"    data-day="1" onclick="selectDay(1)"><span class="dp-num">TUE</span><span class="dp-lbl">PULL</span></div>
+        <div class="day-pill"    data-day="2" onclick="selectDay(2)"><span class="dp-num">WED</span><span class="dp-lbl">SHLDRS</span></div>
+        <div class="day-pill"    data-day="3" onclick="selectDay(3)"><span class="dp-num">THU</span><span class="dp-lbl">COMBO</span></div>
+        <div class="day-pill"    data-day="4" onclick="selectDay(4)"><span class="dp-num">FRI</span><span class="dp-lbl">ARMS</span></div>
       </div>
       <div class="slabel" id="day-title">DAY 1 — CHEST & TRICEPS</div>
       <div id="ex-list"></div>
