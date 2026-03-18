@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#0A0A0A" id="meta-theme">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>IRON LOG</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+    /* ── THEME VARIABLES ── */
+    :root {
+      --accent:#C8FF00;
+      --accent-rgb:200,255,0;
+      --ad:rgba(var(--accent-rgb),.11);
+    }
+    [data-theme="dark"] {
+      --bg:#0A0A0A;--surface:#131313;--card:#1C1C1C;--border:#2A2A2A;
+      --text:#F2F2F2;--muted:#666;--dim:#999;--danger:#FF4444;
+    }
+    [data-theme="light"] {
+      --bg:#F5F5F5;--surface:#FFFFFF;--card:#EEEEEE;--border:#DEDEDE;
+      --text:#111111;--muted:#888;--dim:#666;--danger:#DD2222;
+    }
+
+    html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);
+      font-family:'DM Mono',monospace;-webkit-font-smoothing:antialiased;
+      -webkit-tap-highlight-color:transparent;overscroll-behavior:none;
+      transition:background .25s,color .25s}
+    #app{display:flex;flex-direction:column;height:100%;height:100dvh;max-width:430px;margin:0 auto}
+
+    /* ── HEADER ── */
+    #hdr{display:flex;align-items:center;justify-content:space-between;
+      padding:13px 18px;padding-top:max(13px,env(safe-area-inset-top));
+      border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg);
+      z-index:10;position:relative;transition:background .25s}
+    #hdr::after{content:"";position:absolute;bottom:-1px;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.35}
+    #logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--accent)}
+    #hdr-right{display:flex;align-items:center;gap:10px}
+    #hdr-split{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1.5px;color:var(--muted)}
+    #btn-settings{width:34px;height:34px;border-radius:50%;background:var(--surface);
+      border:1px solid var(--border);color:var(--muted);font-size:16px;
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;transition:all .15s;flex-shrink:0}
+    #btn-settings:active{background:var(--card);color:var(--text)}
+
+    /* ── TABS ── */
+    #tabs{display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--surface);
+      border-bottom:1px solid var(--border);flex-shrink:0;transition:background .25s}
+    .tab{padding:11px 4px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:13px;
+      letter-spacing:1.5px;color:var(--muted);cursor:pointer;border:none;background:none;
+      position:relative;transition:color .2s}
+    .tab::after{content:"";position:absolute;bottom:-1px;left:14%;right:14%;height:2px;
+      background:var(--accent);border-radius:2px;transform:scaleX(0);
+      transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+    .tab.on{color:var(--accent)}.tab.on::after{transform:scaleX(1)}
+
+    /* ── SCROLL ── */
+    #content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
+      overscroll-behavior:contain;scrollbar-width:none}
+    #content::-webkit-scrollbar{display:none}
+
+    /* ── PANELS ── */
+    .panel{display:none;padding:14px;padding-bottom:calc(28px + env(safe-area-inset-bottom,0px));
+      animation:fadeUp .2s ease both}
+    .panel.on{display:block}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ── DAY STRIP ── */
+    #day-strip{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding-bottom:12px}
+    #day-strip::-webkit-scrollbar{display:none}
+    .day-pill{flex-shrink:0;display:flex;flex-direction:column;align-items:center;
+      padding:9px 12px;gap:3px;background:var(--surface);border:1px solid var(--border);
+      border-radius:14px;cursor:pointer;transition:all .15s;user-select:none}
+    .day-pill .dp-num{font-family:'Bebas Neue',sans-serif;font-size:21px;color:var(--muted);line-height:1}
+    .day-pill .dp-lbl{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:1px;color:var(--muted)}
+    .day-pill.on{background:var(--ad);border-color:var(--accent);box-shadow:0 0 12px rgba(var(--accent-rgb),.14)}
+    .day-pill.on .dp-num,.day-pill.on .dp-lbl{color:var(--accent)}
+
+    .slabel{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:3px;color:var(--muted);
+      margin-bottom:10px;padding-left:2px}
+
+    /* ── EXERCISE CARDS ── */
+    .ex-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;
+      margin-bottom:9px;overflow:hidden;transition:all .2s;cursor:pointer;user-select:none;
+      -webkit-tap-highlight-color:transparent}
+    .ex-card:active{transform:scale(.985)}
+    .ex-card.done{border-color:rgba(var(--accent-rgb),.4);
+      background:linear-gradient(135deg,var(--surface),rgba(var(--accent-rgb),.04))}
+    .ex-card.done .ex-left{text-decoration:line-through;
+      text-decoration-color:rgba(var(--accent-rgb),.6);opacity:.45}
+    .ex-top{padding:14px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .ex-left{flex:1;min-width:0}
+    .ex-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.5px;line-height:1.1;margin-bottom:3px}
+    .ex-target{font-size:12px;color:var(--accent);font-family:'Bebas Neue',sans-serif;letter-spacing:1px}
+    .ex-note{font-size:10px;color:var(--muted);margin-top:4px;line-height:1.4}
+    .ex-check{width:30px;height:30px;border-radius:50%;flex-shrink:0;border:1.5px solid var(--border);
+      display:flex;align-items:center;justify-content:center;font-size:14px;
+      color:transparent;background:transparent;transition:all .2s}
+    .ex-card.done .ex-check{border-color:var(--accent);background:var(--accent);color:#000}
+
+    /* ── BUTTONS ── */
+    .btn-finish{width:100%;margin-top:12px;padding:15px;background:var(--accent);color:#000;
+      font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:2px;border:none;
+      border-radius:14px;cursor:pointer;transition:all .15s}
+    .btn-finish:active{transform:scale(.97);filter:brightness(.88)}
+    .btn-reset{width:100%;margin-top:7px;padding:11px;background:transparent;color:var(--muted);
+      font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;
+      border:1px solid var(--border);border-radius:14px;cursor:pointer;transition:all .15s}
+    .btn-reset:active{background:var(--card);color:var(--text)}
+
+    /* ── HISTORY ── */
+    .hist-item{background:var(--surface);border:1px solid var(--border);border-radius:14px;
+      margin-bottom:9px;overflow:hidden}
+    .hist-hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 14px;
+      cursor:pointer;gap:10px}
+    .hist-hdr:active{background:var(--card)}
+    .hist-meta{display:flex;align-items:center;gap:8px;flex:1;flex-wrap:wrap}
+    .hist-date{font-family:'Bebas Neue',sans-serif;font-size:16px}
+    .hist-tag{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:1.5px;padding:3px 9px;
+      border-radius:20px;border:1px solid var(--border);color:var(--muted)}
+    .hist-count{font-size:11px;color:var(--muted)}
+    .hist-chev{color:var(--muted);font-size:11px;flex-shrink:0;transition:transform .2s}
+    .hist-item.open .hist-chev{transform:rotate(90deg)}
+    .hist-body{display:none;padding:0 14px 12px;border-top:1px solid var(--border)}
+    .hist-item.open .hist-body{display:block}
+    .hist-ex-row{display:flex;justify-content:space-between;align-items:center;
+      padding:8px 0;border-bottom:1px solid var(--border);gap:8px}
+    .hist-ex-row:last-of-type{border-bottom:none}
+    .hist-ex-name{font-family:'Bebas Neue',sans-serif;font-size:15px}
+    .hist-ex-sets{font-size:11px;color:var(--dim);white-space:nowrap}
+    .hist-foot{display:flex;justify-content:flex-end;margin-top:8px}
+    .btn-del{display:flex;align-items:center;gap:5px;padding:7px 13px;
+      font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;color:var(--danger);
+      background:transparent;border:1px solid rgba(255,68,68,.25);border-radius:8px;
+      cursor:pointer;transition:all .15s}
+    .btn-del:active{background:rgba(255,68,68,.1)}
+
+    .empty{text-align:center;padding:38px 20px}
+    .empty-ico{font-size:40px;opacity:.28;margin-bottom:10px}
+    .empty-ttl{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;color:var(--muted)}
+    .empty-sub{font-size:12px;color:var(--muted);opacity:.5;margin-top:5px}
+
+    /* ── STREAK CALENDAR ── */
+    .streak-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .streak-stat{text-align:center}
+    .streak-num{font-family:'Bebas Neue',sans-serif;font-size:34px;color:var(--accent);line-height:1}
+    .streak-lbl{font-size:10px;letter-spacing:2px;color:var(--muted);margin-top:2px}
+
+    .cal-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px}
+    .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .cal-month-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--text)}
+    .cal-nav-btn{width:34px;height:34px;border-radius:50%;background:var(--card);
+      border:1px solid var(--border);color:var(--text);font-size:16px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+    .cal-nav-btn:active{background:var(--accent);color:#000;border-color:var(--accent)}
+    .cal-hdr-grid{display:grid;grid-template-columns:repeat(7,40px);gap:4px;justify-content:center;margin-bottom:4px}
+    .cal-day-hdr{width:40px;height:26px;display:flex;align-items:center;justify-content:center;
+      font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:1px;color:var(--muted)}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,40px);grid-auto-rows:40px;gap:4px;justify-content:center}
+    .cal-day{width:40px;height:40px;border-radius:8px;background:var(--card);
+      display:flex;align-items:center;justify-content:center;
+      font-size:13px;color:var(--muted);font-family:'DM Mono',monospace;transition:all .2s}
+    .cal-day.trained{background:var(--accent);color:#000;font-weight:600;
+      box-shadow:0 0 8px rgba(var(--accent-rgb),.4)}
+    .cal-day.today{border:2px solid var(--accent);color:var(--accent)}
+    .cal-day.today.trained{color:#000}
+    .cal-day.empty{background:transparent}
+    .cal-summary{text-align:center;font-size:11px;color:var(--muted);
+      margin-top:12px;padding-top:10px;border-top:1px solid var(--border)}
+
+    /* ── SETTINGS SHEET ── */
+    #settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);
+      backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+      z-index:50;opacity:0;pointer-events:none;transition:opacity .25s}
+    #settings-overlay.open{opacity:1;pointer-events:all}
+    #settings-sheet{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);
+      width:100%;max-width:430px;background:var(--surface);border-radius:22px 22px 0 0;
+      border-top:1px solid var(--border);padding:20px 18px;
+      padding-bottom:calc(22px + env(safe-area-inset-bottom,0px));
+      z-index:51;transition:transform .3s cubic-bezier(.32,1,.4,1)}
+    #settings-sheet.open{transform:translateX(-50%) translateY(0)}
+
+    .sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--border);
+      margin:0 auto 18px}
+    .sheet-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;margin-bottom:18px}
+    .sheet-row{display:flex;align-items:center;justify-content:space-between;
+      padding:12px 0;border-bottom:1px solid var(--border)}
+    .sheet-row:last-child{border-bottom:none}
+    .sheet-row-lbl{font-size:13px;color:var(--text)}
+    .sheet-row-sub{font-size:10px;color:var(--muted);margin-top:2px}
+
+    /* Toggle switch */
+    .toggle-wrap{position:relative;width:46px;height:26px;flex-shrink:0}
+    .toggle-wrap input{opacity:0;width:0;height:0;position:absolute}
+    .toggle-track{position:absolute;inset:0;border-radius:13px;background:var(--border);
+      cursor:pointer;transition:background .2s}
+    .toggle-track::before{content:"";position:absolute;width:20px;height:20px;border-radius:50%;
+      background:#fff;top:3px;left:3px;transition:transform .2s}
+    .toggle-wrap input:checked + .toggle-track{background:var(--accent)}
+    .toggle-wrap input:checked + .toggle-track::before{transform:translateX(20px);background:#000}
+
+    /* Color swatches */
+    .swatch-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+    .swatch{width:30px;height:30px;border-radius:50%;cursor:pointer;border:2px solid transparent;
+      transition:all .15s;flex-shrink:0}
+    .swatch.active{border-color:var(--text);transform:scale(1.15)}
+
+    /* Notif time input */
+    .time-input{background:var(--card);border:1px solid var(--border);border-radius:8px;
+      color:var(--text);font-family:'DM Mono',monospace;font-size:14px;
+      padding:8px 12px;outline:none;width:110px}
+    .time-input:focus{border-color:var(--accent)}
+    .btn-notif{padding:8px 14px;background:var(--accent);color:#000;
+      font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;
+      border:none;border-radius:8px;cursor:pointer;transition:all .15s}
+    .btn-notif:active{filter:brightness(.88)}
+    #notif-status{font-size:10px;color:var(--muted);margin-top:4px}
+
+    /* ── CONFETTI CANVAS ── */
+    #confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:100;
+      display:none}
+
+    /* ── TOAST ── */
+    #toast{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:50%;
+      transform:translateX(-50%) translateY(72px);background:var(--accent);color:#000;
+      font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1.5px;
+      padding:11px 22px;border-radius:30px;white-space:nowrap;
+      transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+      z-index:200;pointer-events:none}
+    #toast.show{transform:translateX(-50%) translateY(0)}
+
+    @media(min-width:430px){body{display:flex;justify-content:center}
+      #app{border-left:1px solid var(--border);border-right:1px solid var(--border)}}
+  </style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+
+<div id="app">
+  <header id="hdr">
+    <div id="logo">IRON LOG</div>
+    <div id="hdr-right">
+      <div id="hdr-split">SELECT A DAY</div>
+      <div id="btn-settings" onclick="openSettings()">⚙️</div>
+    </div>
+  </header>
+
+  <nav id="tabs">
+    <button class="tab on"  onclick="switchTab('workout')">WORKOUT</button>
+    <button class="tab"     onclick="switchTab('history')">HISTORY</button>
+    <button class="tab"     onclick="switchTab('streak')">STREAK</button>
+  </nav>
+
+  <main id="content">
+
+    <!-- WORKOUT -->
+    <section id="panel-workout" class="panel on">
+      <div id="day-strip">
+        <div class="day-pill on" data-day="0" onclick="selectDay(0)"><span class="dp-num">1</span><span class="dp-lbl">PUSH</span></div>
+        <div class="day-pill"    data-day="1" onclick="selectDay(1)"><span class="dp-num">2</span><span class="dp-lbl">PULL</span></div>
+        <div class="day-pill"    data-day="2" onclick="selectDay(2)"><span class="dp-num">3</span><span class="dp-lbl">SHLDRS</span></div>
+        <div class="day-pill"    data-day="3" onclick="selectDay(3)"><span class="dp-num">4</span><span class="dp-lbl">COMBO</span></div>
+        <div class="day-pill"    data-day="4" onclick="selectDay(4)"><span class="dp-num">5</span><span class="dp-lbl">ARMS</span></div>
+      </div>
+      <div class="slabel" id="day-title">DAY 1 — CHEST & TRICEPS</div>
+      <div id="ex-list"></div>
+      <button class="btn-finish" onclick="finishWorkout()">✓ FINISH WORKOUT</button>
+      <button class="btn-reset"  onclick="resetDay()">RESET</button>
+    </section>
+
+    <!-- HISTORY -->
+    <section id="panel-history" class="panel">
+      <div class="slabel">WORKOUT HISTORY</div>
+      <div id="hist-list"></div>
+    </section>
+
+    <!-- STREAK -->
+    <section id="panel-streak" class="panel">
+      <div class="streak-header">
+        <div class="streak-stat">
+          <div class="streak-num" id="streak-cur">0</div>
+          <div class="streak-lbl">CURRENT<br>STREAK</div>
+        </div>
+        <div class="streak-stat">
+          <div class="streak-num" id="streak-best">0</div>
+          <div class="streak-lbl">BEST<br>STREAK</div>
+        </div>
+        <div class="streak-stat">
+          <div class="streak-num" id="streak-total">0</div>
+          <div class="streak-lbl">TOTAL<br>SESSIONS</div>
+        </div>
+      </div>
+      <div id="cal-container"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- SETTINGS SHEET -->
+<div id="settings-overlay" onclick="closeSettings()"></div>
+<div id="settings-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">SETTINGS</div>
+
+  <!-- Dark / Light mode -->
+  <div class="sheet-row">
+    <div>
+      <div class="sheet-row-lbl">Light Mode</div>
+      <div class="sheet-row-sub">Toggle light/dark theme</div>
+    </div>
+    <label class="toggle-wrap">
+      <input type="checkbox" id="toggle-theme" onchange="toggleTheme(this.checked)">
+      <div class="toggle-track"></div>
+    </label>
+  </div>
+
+  <!-- Accent color -->
+  <div class="sheet-row" style="flex-direction:column;align-items:flex-start;gap:10px">
+    <div class="sheet-row-lbl">Accent Color</div>
+    <div class="swatch-row" id="swatch-row">
+      <div class="swatch active" data-color="#C8FF00" data-rgb="200,255,0"   style="background:#C8FF00" onclick="setAccent(this)"></div>
+      <div class="swatch"        data-color="#00CFFF" data-rgb="0,207,255"   style="background:#00CFFF" onclick="setAccent(this)"></div>
+      <div class="swatch"        data-color="#FF2D78" data-rgb="255,45,120"  style="background:#FF2D78" onclick="setAccent(this)"></div>
+      <div class="swatch"        data-color="#FF6B00" data-rgb="255,107,0"   style="background:#FF6B00" onclick="setAccent(this)"></div>
+      <div class="swatch"        data-color="#BF00FF" data-rgb="191,0,255"   style="background:#BF00FF" onclick="setAccent(this)"></div>
+      <div class="swatch"        data-color="#FFFFFF" data-rgb="255,255,255" style="background:#FFFFFF" onclick="setAccent(this)"></div>
+    </div>
+  </div>
+
+  <!-- Notifications -->
+  <div class="sheet-row" style="flex-direction:column;align-items:flex-start;gap:8px">
+    <div class="sheet-row-lbl">Workout Reminder</div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <input type="time" id="notif-time" class="time-input" value="09:00">
+      <button class="btn-notif" onclick="scheduleNotif()">SET</button>
+    </div>
+    <div id="notif-status">Tap SET to enable daily reminder</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════
+   SCHEDULE
+══════════════════════════════════════════════ */
+const SCHEDULE=[
+  {label:"DAY 1 — CHEST & TRICEPS",split:"PUSH",exercises:[
+    {name:"Chest Press Machine",sets:4,target:"4 × 8–12",note:"Adjust so last 2 reps are hard"},
+    {name:"Smith Machine Incline Bench",sets:4,target:"4 × 8–12",note:"Keep form strict"},
+    {name:"Pec Deck / Cable Fly",sets:3,target:"3 × 12–15",note:"Stretch & squeeze chest"},
+    {name:"Shoulder Press Machine",sets:3,target:"3 × 8–12",note:"Front + side delts"},
+    {name:"Tricep Pushdown / Extension Machine",sets:3,target:"3 × 10–12",note:"Focus on full contraction"},
+  ]},
+  {label:"DAY 2 — BACK & BICEPS",split:"PULL",exercises:[
+    {name:"Lat Pulldown Machine",sets:4,target:"4 × 8–12",note:"Full range, controlled"},
+    {name:"Seated Row Machine",sets:4,target:"4 × 8–12",note:"Pull elbows back, squeeze mid-back"},
+    {name:"Rear Delt / Reverse Fly Machine",sets:3,target:"3 × 12–15",note:"Rear delts for shoulder balance"},
+    {name:"Bicep Curl Machine",sets:3,target:"3 × 10–12",note:"Slow negative"},
+    {name:"Preacher Curl Machine",sets:3,target:"3 × 10–12",note:"Full contraction, slow negative"},
+    {name:"Pull-Ups (assisted if needed)",sets:3,target:"3 × 6–10",note:"Bodyweight or assisted"},
+  ]},
+  {label:"DAY 3 — SHOULDERS & ABS",split:"SHOULDERS",exercises:[
+    {name:"Shoulder Press Machine",sets:4,target:"4 × 8–12",note:"Heavier weight, controlled"},
+    {name:"Lateral Raise Machine",sets:3,target:"3 × 12–15",note:"Squeeze at top"},
+    {name:"Rear Delt / Reverse Fly Machine",sets:3,target:"3 × 12–15",note:"If not done Day 2"},
+    {name:"Ab Crunch Machine",sets:3,target:"3 × 12–20",note:"Full range"},
+    {name:"Hanging Leg Raise / Plank",sets:3,target:"3 × 12–20",note:"Or plank 3 × 60 sec"},
+  ]},
+  {label:"DAY 4 — CHEST & BACK COMBO",split:"COMBO",exercises:[
+    {name:"Chest Press Machine",sets:3,target:"3 × 8–12",note:"Slightly lighter than Day 1"},
+    {name:"Smith Incline Bench",sets:3,target:"3 × 8–12",note:"Focus on slow eccentric"},
+    {name:"Lat Pulldown Machine",sets:3,target:"3 × 8–12",note:"Pull controlled"},
+    {name:"Seated Row Machine",sets:3,target:"3 × 8–12",note:"Focus on squeeze"},
+    {name:"Pec Deck / Cable Fly",sets:3,target:"3 × 12–15",note:"Optional finisher"},
+  ]},
+  {label:"DAY 5 — ARMS & CORE",split:"ARMS",exercises:[
+    {name:"Bicep Curl Machine",sets:3,target:"3 × 10–12",note:"Full contraction"},
+    {name:"Tricep Pushdown / Extension Machine",sets:3,target:"3 × 10–12",note:"Focus on squeeze"},
+    {name:"Preacher Curl Machine",sets:3,target:"3 × 10–12",note:"Optional"},
+    {name:"Ab Crunch Machine",sets:3,target:"3 × 12–20",note:"Full contraction"},
+    {name:"Plank",sets:3,target:"3 × 60 sec",note:"Optional finish"},
+    {name:"Leg Press Machine",sets:3,target:"3 × 10–12",note:"Optional – hormones & stability"},
+  ]},
+];
+
+/* ══ STATE ══ */
+const S={day:0,done:{},workouts:[]};
+
+/* ══ INIT ══ */
+function init(){
+  const w=localStorage.getItem("il_workouts");if(w)S.workouts=JSON.parse(w);
+  const d=localStorage.getItem("il_day");if(d!==null)S.day=parseInt(d);
+  const dn=localStorage.getItem("il_done");if(dn)S.done=JSON.parse(dn);
+
+  // Restore theme
+  const theme=localStorage.getItem("il_theme")||"dark";
+  document.documentElement.dataset.theme=theme;
+  document.getElementById("toggle-theme").checked=(theme==="light");
+  updateMetaTheme();
+
+  // Restore accent
+  const accent=localStorage.getItem("il_accent");
+  const rgb=localStorage.getItem("il_accent_rgb");
+  if(accent&&rgb){
+    applyAccent(accent,rgb);
+    document.querySelectorAll(".swatch").forEach(s=>{
+      s.classList.toggle("active",s.dataset.color===accent);
+    });
+  }
+
+  // Restore notif time display
+  const nt=localStorage.getItem("il_notif_time");
+  if(nt){
+    document.getElementById("notif-time").value=nt;
+    document.getElementById("notif-status").textContent="⏰ Reminder set for "+nt;
+  }
+
+  applyDayUI(S.day);
+  renderExercises();
+  renderHistory();
+}
+
+/* ══ TABS ══ */
+function switchTab(name){
+  document.querySelectorAll(".tab").forEach((b,i)=>
+    b.classList.toggle("on",["workout","history","streak"][i]===name));
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("on"));
+  document.getElementById("panel-"+name).classList.add("on");
+  if(name==="history")renderHistory();
+  if(name==="streak")renderStreak();
+}
+
+/* ══ DAY ══ */
+function selectDay(idx){
+  S.day=idx;localStorage.setItem("il_day",idx);
+  applyDayUI(idx);renderExercises();
+}
+function applyDayUI(idx){
+  document.querySelectorAll(".day-pill").forEach(p=>
+    p.classList.toggle("on",parseInt(p.dataset.day)===idx));
+  document.getElementById("hdr-split").textContent=SCHEDULE[idx].split;
+  document.getElementById("day-title").textContent=SCHEDULE[idx].label;
+}
+
+/* ══ EXERCISES ══ */
+function renderExercises(){
+  const day=SCHEDULE[S.day];
+  document.getElementById("ex-list").innerHTML=day.exercises.map((ex,ei)=>{
+    const done=!!S.done[`${S.day}-${ei}`];
+    return `<div class="ex-card ${done?"done":""}" id="ec-${ei}" onclick="toggleEx(${ei})">
+      <div class="ex-top"><div class="ex-left">
+        <div class="ex-name">${ex.name}</div>
+        <div class="ex-target">${ex.target}</div>
+        <div class="ex-note">${ex.note}</div>
+      </div><div class="ex-check">${done?"✓":""}</div></div></div>`;
+  }).join("");
+}
+function toggleEx(ei){
+  const key=`${S.day}-${ei}`;S.done[key]=!S.done[key];
+  localStorage.setItem("il_done",JSON.stringify(S.done));
+  if(navigator.vibrate)navigator.vibrate(18);
+  const isDone=S.done[key];
+  const card=document.getElementById(`ec-${ei}`);
+  card.classList.toggle("done",isDone);
+  card.querySelector(".ex-check").textContent=isDone?"✓":"";
+}
+function resetDay(){
+  SCHEDULE[S.day].exercises.forEach((_,ei)=>delete S.done[`${S.day}-${ei}`]);
+  localStorage.setItem("il_done",JSON.stringify(S.done));
+  renderExercises();showToast("RESET");
+}
+
+/* ══ FINISH ══ */
+function finishWorkout(){
+  const day=SCHEDULE[S.day];
+  S.workouts.push({
+    id:Date.now(),date:new Date().toISOString(),
+    dayNum:S.day+1,label:day.label,split:day.split,
+    exercises:day.exercises.map(ex=>({name:ex.name,target:ex.target,done:ex.sets,total:ex.sets})),
+  });
+  localStorage.setItem("il_workouts",JSON.stringify(S.workouts));
+  day.exercises.forEach((_,ei)=>delete S.done[`${S.day}-${ei}`]);
+  localStorage.setItem("il_done",JSON.stringify(S.done));
+  renderExercises();
+  if(navigator.vibrate)navigator.vibrate([40,20,80]);
+  launchConfetti();
+  showToast("SESSION SAVED 🔥");
+  setTimeout(()=>switchTab("history"),1200);
+}
+
+/* ══ HISTORY ══ */
+function renderHistory(){
+  const el=document.getElementById("hist-list");
+  if(!S.workouts.length){
+    el.innerHTML=`<div class="empty"><div class="empty-ico">📋</div>
+      <div class="empty-ttl">NO HISTORY YET</div>
+      <div class="empty-sub">Finish a workout to see it here</div></div>`;return;
+  }
+  el.innerHTML=[...S.workouts].reverse().map(w=>{
+    const d=new Date(w.date);
+    const date=d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}).toUpperCase();
+    const time=d.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"});
+    const rows=w.exercises.map(ex=>{
+      const reps=ex.target?(ex.target.includes("×")?ex.target.split("×")[1].trim():ex.target):"";
+      return `<div class="hist-ex-row"><span class="hist-ex-name">${ex.name}</span>
+        <span class="hist-ex-sets">${ex.done}/${ex.total} · ${reps}</span></div>`;
+    }).join("");
+    return `<div class="hist-item" id="hi-${w.id}">
+      <div class="hist-hdr" onclick="toggleHist('${w.id}')">
+        <div class="hist-meta">
+          <div class="hist-date">${date}</div>
+          <div class="hist-tag">${w.split}</div>
+          <div class="hist-count">${w.exercises.length} ex · ${time}</div>
+        </div><span class="hist-chev">▶</span>
+      </div>
+      <div class="hist-body">${rows}
+        <div class="hist-foot"><button class="btn-del" onclick="deleteWorkout('${w.id}')">🗑 DELETE</button></div>
+      </div></div>`;
+  }).join("");
+}
+function toggleHist(id){document.getElementById("hi-"+id)?.classList.toggle("open");}
+function deleteWorkout(id){
+  S.workouts=S.workouts.filter(w=>String(w.id)!==String(id));
+  localStorage.setItem("il_workouts",JSON.stringify(S.workouts));
+  renderHistory();showToast("DELETED");
+}
+
+/* ══════════════════════════════════════════════
+   STREAK CALENDAR
+══════════════════════════════════════════════ */
+let calYear=new Date().getFullYear();
+let calMonth=new Date().getMonth(); // 0-indexed
+
+function renderStreak(){
+  const trainedSet=new Set(S.workouts.map(w=>w.date.slice(0,10)));
+  const total=S.workouts.length;
+  const today=new Date();today.setHours(0,0,0,0);
+
+  // Current streak: consecutive days going back from today
+  let cur=0;
+  for(let i=0;i<365;i++){
+    const d=new Date(today);d.setDate(d.getDate()-i);
+    if(trainedSet.has(d.toISOString().slice(0,10)))cur++;
+    else if(i>0)break;
+    else break;
+  }
+
+  // Best streak over all time
+  const allDates=[...trainedSet].sort();
+  let best=0,run=0,prev=null;
+  allDates.forEach(k=>{
+    const d=new Date(k);
+    if(prev){
+      const diff=(d-prev)/86400000;
+      run = diff===1 ? run+1 : 1;
+    } else { run=1; }
+    best=Math.max(best,run);
+    prev=d;
+  });
+
+  document.getElementById("streak-cur").textContent=cur;
+  document.getElementById("streak-best").textContent=best;
+  document.getElementById("streak-total").textContent=total;
+
+  renderCalMonth(trainedSet,today);
+}
+
+function renderCalMonth(trainedSet,today){
+  const DAYS=["SUN","MON","TUE","WED","THU","FRI","SAT"];
+  const MONTHS=["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE",
+                "JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
+
+  const now=new Date();
+  const isCurrentMonth=(calYear===now.getFullYear()&&calMonth===now.getMonth());
+
+  const firstDay=new Date(calYear,calMonth,1).getDay(); // 0=Sun
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+
+  const container=document.getElementById("cal-container");
+  container.innerHTML=`
+    <div class="cal-wrap">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="shiftMonth(-1)">&#8592;</button>
+        <div class="cal-month-title">${MONTHS[calMonth]} ${calYear}</div>
+        <button class="cal-nav-btn" onclick="shiftMonth(1)" ${isCurrentMonth?"disabled style='opacity:.3;pointer-events:none'":""}>&#8594;</button>
+      </div>
+
+      <div class="cal-hdr-grid">
+        ${DAYS.map(d=>`<div class="cal-day-hdr">${d.slice(0,1)}</div>`).join("")}
+      </div>
+
+      <div class="cal-grid">
+        ${Array.from({length:firstDay},()=>`<div class="cal-day empty"></div>`).join("")}
+        ${Array.from({length:daysInMonth},(_,i)=>{
+          const date=new Date(calYear,calMonth,i+1);
+          const k=date.toISOString().slice(0,10);
+          const isToday=today&&date.getTime()===today.getTime();
+          const trained=trainedSet.has(k);
+          let cls="cal-day";
+          if(trained)cls+=" trained";
+          if(isToday)cls+=" today";
+          return `<div class="${cls}">${i+1}</div>`;
+        }).join("")}
+      </div>
+
+      <div class="cal-summary">
+        ${[...trainedSet].filter(k=>k.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`)).length} sessions this month
+      </div>
+    </div>`;
+}
+
+function shiftMonth(dir){
+  calMonth+=dir;
+  if(calMonth>11){calMonth=0;calYear++;}
+  if(calMonth<0){calMonth=11;calYear--;}
+  const trainedSet=new Set(S.workouts.map(w=>w.date.slice(0,10)));
+  const today=new Date();today.setHours(0,0,0,0);
+  renderCalMonth(trainedSet,today);
+}
+
+/* ══════════════════════════════════════════════
+   CONFETTI
+══════════════════════════════════════════════ */
+function launchConfetti(){
+  const canvas=document.getElementById("confetti-canvas");
+  const ctx=canvas.getContext("2d");
+  canvas.style.display="block";
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+
+  // Get current accent color
+  const accent=getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+  const colors=[accent,"#ffffff","#ffdd00","#00cfff","#ff2d78","#bf00ff"];
+
+  const particles=Array.from({length:130},()=>({
+    x:Math.random()*canvas.width,
+    y:-10-Math.random()*canvas.height*0.3,
+    r:Math.random()*7+3,
+    d:Math.random()*120+80,
+    color:colors[Math.floor(Math.random()*colors.length)],
+    tilt:Math.random()*10-10,
+    tiltAngle:0,
+    tiltSpeed:Math.random()*.1+.05,
+    vx:(Math.random()-.5)*3,
+    vy:Math.random()*4+3,
+    alpha:1,
+  }));
+
+  let frame=0;
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    let alive=false;
+    particles.forEach(p=>{
+      p.tiltAngle+=p.tiltSpeed;
+      p.x+=p.vx+Math.sin(frame*.02)*1.5;
+      p.y+=p.vy;
+      p.tilt=Math.sin(p.tiltAngle)*12;
+      if(p.y<canvas.height+20)alive=true;
+      p.alpha=Math.max(0,1-(p.y-canvas.height*0.7)/(canvas.height*0.3));
+      ctx.beginPath();
+      ctx.save();
+      ctx.globalAlpha=Math.max(0,p.alpha);
+      ctx.fillStyle=p.color;
+      ctx.translate(p.x,p.y);
+      ctx.rotate(p.tilt*(Math.PI/180));
+      ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*1.6);
+      ctx.restore();
+    });
+    frame++;
+    if(alive&&frame<260)requestAnimationFrame(draw);
+    else{ctx.clearRect(0,0,canvas.width,canvas.height);canvas.style.display="none";}
+  }
+  draw();
+}
+
+/* ══════════════════════════════════════════════
+   SETTINGS
+══════════════════════════════════════════════ */
+function openSettings(){
+  document.getElementById("settings-overlay").classList.add("open");
+  document.getElementById("settings-sheet").classList.add("open");
+}
+function closeSettings(){
+  document.getElementById("settings-overlay").classList.remove("open");
+  document.getElementById("settings-sheet").classList.remove("open");
+}
+
+/* ── THEME ── */
+function toggleTheme(isLight){
+  const theme=isLight?"light":"dark";
+  document.documentElement.dataset.theme=theme;
+  localStorage.setItem("il_theme",theme);
+  updateMetaTheme();
+}
+function updateMetaTheme(){
+  const bg=getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+  document.getElementById("meta-theme").content=bg;
+}
+
+/* ── ACCENT COLOR ── */
+function setAccent(el){
+  document.querySelectorAll(".swatch").forEach(s=>s.classList.remove("active"));
+  el.classList.add("active");
+  applyAccent(el.dataset.color,el.dataset.rgb);
+  localStorage.setItem("il_accent",el.dataset.color);
+  localStorage.setItem("il_accent_rgb",el.dataset.rgb);
+}
+function applyAccent(color,rgb){
+  document.documentElement.style.setProperty("--accent",color);
+  document.documentElement.style.setProperty("--accent-rgb",rgb);
+  document.documentElement.style.setProperty("--ad",`rgba(${rgb},.11)`);
+  updateMetaTheme();
+}
+
+/* ── NOTIFICATIONS ── */
+async function scheduleNotif(){
+  const time=document.getElementById("notif-time").value;
+  const status=document.getElementById("notif-status");
+
+  if(!("Notification" in window)){
+    status.textContent="❌ Notifications not supported in this browser";
+    return;
+  }
+  const perm=await Notification.requestPermission();
+  if(perm!=="granted"){
+    status.textContent="❌ Permission denied — enable in browser settings";
+    return;
+  }
+
+  localStorage.setItem("il_notif_time",time);
+
+  // Schedule via setTimeout loop
+  scheduleNextNotif(time);
+  status.textContent=`⏰ Reminder set for ${time} daily`;
+  showToast("REMINDER SET ✓");
+  closeSettings();
+}
+
+function scheduleNextNotif(time){
+  const [h,m]=time.split(":").map(Number);
+  const now=new Date();
+  const next=new Date();
+  next.setHours(h,m,0,0);
+  if(next<=now)next.setDate(next.getDate()+1);
+  const ms=next-now;
+  clearTimeout(window._notifTimer);
+  window._notifTimer=setTimeout(()=>{
+    new Notification("IRON LOG 💪",{
+      body:"Time to train. Let's get it.",
+      icon:"",
+      badge:"",
+    });
+    scheduleNextNotif(time); // reschedule for tomorrow
+  },ms);
+}
+
+/* ══ TOAST ══ */
+let toastTmo;
+function showToast(msg){
+  const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
+  clearTimeout(toastTmo);toastTmo=setTimeout(()=>t.classList.remove("show"),2400);
+}
+
+/* ══ GO ══ */
+init();
+
+// Re-schedule notification on load if one was saved
+const savedNotifTime=localStorage.getItem("il_notif_time");
+if(savedNotifTime&&Notification&&Notification.permission==="granted"){
+  scheduleNextNotif(savedNotifTime);
+}
+</script>
+</body>
+</html>
