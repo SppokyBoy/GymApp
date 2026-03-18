@@ -48,7 +48,7 @@
     #btn-settings:active{background:var(--card);color:var(--text)}
 
     /* ── TABS ── */
-    #tabs{display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--surface);
+    #tabs{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;background:var(--surface);
       border-bottom:1px solid var(--border);flex-shrink:0;transition:background .25s}
     .tab{padding:11px 4px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:13px;
       letter-spacing:1.5px;color:var(--muted);cursor:pointer;border:none;background:none;
@@ -225,6 +225,42 @@
       display:none}
 
     /* ── TOAST ── */
+    /* ── STATS ── */
+    .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:14px}
+    .week-day{display:flex;flex-direction:column;align-items:center;gap:5px}
+    .week-day-lbl{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:1px;color:var(--muted)}
+    .week-dot{width:32px;height:32px;border-radius:50%;background:var(--card);
+      border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;
+      font-size:9px;font-family:'Bebas Neue',sans-serif;color:var(--muted);
+      transition:all .2s;letter-spacing:.5px}
+    .week-dot.done{background:var(--accent);border-color:var(--accent);color:#000;
+      box-shadow:0 0 8px rgba(var(--accent-rgb),.4)}
+    .week-dot.today{border-color:var(--accent);color:var(--accent)}
+    .week-dot.today.done{color:#000}
+
+    .week-recap{background:var(--surface);border:1px solid var(--border);border-radius:14px;
+      padding:14px;margin-bottom:8px}
+    .week-recap-row{display:flex;justify-content:space-between;align-items:center;
+      padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}
+    .week-recap-row:last-child{border-bottom:none}
+    .week-recap-lbl{color:var(--muted)}
+    .week-recap-val{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--accent)}
+
+    .muscle-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;
+      padding:14px;margin-bottom:8px}
+    .muscle-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .muscle-row:last-child{margin-bottom:0}
+    .muscle-rank{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--muted);
+      width:24px;flex-shrink:0;line-height:1}
+    .muscle-info{flex:1;min-width:0}
+    .muscle-name{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.5px;margin-bottom:4px}
+    .muscle-bar-track{height:6px;border-radius:3px;background:var(--card)}
+    .muscle-bar-fill{height:100%;border-radius:3px;background:var(--accent);
+      transition:width .6s cubic-bezier(.22,1,.36,1);
+      box-shadow:0 0 5px rgba(var(--accent-rgb),.35)}
+    .muscle-count{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--accent);
+      flex-shrink:0}
+
     #toast{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:50%;
       transform:translateX(-50%) translateY(72px);background:var(--accent);color:#000;
       font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1.5px;
@@ -254,6 +290,7 @@
     <button class="tab on"  onclick="switchTab('workout')">WORKOUT</button>
     <button class="tab"     onclick="switchTab('history')">HISTORY</button>
     <button class="tab"     onclick="switchTab('streak')">STREAK</button>
+    <button class="tab"     onclick="switchTab('stats')">STATS</button>
   </nav>
 
   <main id="content">
@@ -296,6 +333,14 @@
         </div>
       </div>
       <div id="cal-container"></div>
+    </section>
+
+    <!-- STATS -->
+    <section id="panel-stats" class="panel">
+      <div class="slabel">THIS WEEK</div>
+      <div id="week-summary"></div>
+      <div class="slabel" style="margin-top:18px">MOST TRAINED</div>
+      <div id="muscle-stats"></div>
     </section>
 
   </main>
@@ -429,11 +474,12 @@ function init(){
 /* ══ TABS ══ */
 function switchTab(name){
   document.querySelectorAll(".tab").forEach((b,i)=>
-    b.classList.toggle("on",["workout","history","streak"][i]===name));
+    b.classList.toggle("on",["workout","history","streak","stats"][i]===name));
   document.querySelectorAll(".panel").forEach(p=>p.classList.remove("on"));
   document.getElementById("panel-"+name).classList.add("on");
   if(name==="history")renderHistory();
   if(name==="streak")renderStreak();
+  if(name==="stats")renderStats();
 }
 
 /* ══ DAY ══ */
@@ -758,6 +804,113 @@ function scheduleNextNotif(time){
     });
     scheduleNextNotif(time); // reschedule for tomorrow
   },ms);
+}
+
+/* ══════════════════════════════════════════════
+   STATS
+══════════════════════════════════════════════ */
+const SPLIT_MUSCLES = {
+  PUSH:      ['Chest','Shoulders','Triceps'],
+  PULL:      ['Back','Biceps','Traps'],
+  SHOULDERS: ['Shoulders','Traps'],
+  COMBO:     ['Chest','Back'],
+  ARMS:      ['Biceps','Triceps'],
+};
+
+function renderStats(){
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  /* ── This week (Mon–Sun) ── */
+  const dow = today.getDay(); // 0=Sun
+  const mondayOffset = dow === 0 ? -6 : 1 - dow;
+  const weekStart = new Date(today); weekStart.setDate(today.getDate() + mondayOffset);
+
+  const WEEK_DAYS = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
+  const trainedDates = new Set(S.workouts.map(w => w.date.slice(0,10)));
+
+  // Map workouts this week by date
+  const thisWeekWorkouts = S.workouts.filter(w => {
+    const d = new Date(w.date); d.setHours(0,0,0,0);
+    return d >= weekStart && d <= today;
+  });
+  const byDate = {};
+  thisWeekWorkouts.forEach(w => { byDate[w.date.slice(0,10)] = w.split; });
+
+  // Dot row for Mon–Sun
+  const dots = WEEK_DAYS.map((lbl, i) => {
+    const d = new Date(weekStart); d.setDate(weekStart.getDate() + i);
+    const k = d.toISOString().slice(0,10);
+    const isToday = d.getTime() === today.getTime();
+    const done = !!byDate[k];
+    let cls = 'week-dot';
+    if(done) cls += ' done';
+    if(isToday) cls += ' today';
+    const abbr = done ? byDate[k].slice(0,3) : '';
+    return `<div class="week-day">
+      <div class="${cls}">${abbr}</div>
+      <div class="week-day-lbl">${lbl}</div>
+    </div>`;
+  }).join('');
+
+  // Week recap numbers
+  const sessionsThisWeek = thisWeekWorkouts.length;
+  const daysLeft = 7 - (dow === 0 ? 6 : dow - 1) - 1; // days remaining in week
+  const totalSessions = S.workouts.length;
+
+  // Last 4 weeks avg
+  const fourWeeksAgo = new Date(today); fourWeeksAgo.setDate(today.getDate() - 28);
+  const last4 = S.workouts.filter(w => new Date(w.date) >= fourWeeksAgo).length;
+  const avgPerWeek = (last4 / 4).toFixed(1);
+
+  document.getElementById('week-summary').innerHTML = `
+    <div class="week-grid">${dots}</div>
+    <div class="week-recap">
+      <div class="week-recap-row">
+        <span class="week-recap-lbl">Sessions this week</span>
+        <span class="week-recap-val">${sessionsThisWeek}</span>
+      </div>
+      <div class="week-recap-row">
+        <span class="week-recap-lbl">Avg per week (last 4)</span>
+        <span class="week-recap-val">${avgPerWeek}</span>
+      </div>
+      <div class="week-recap-row">
+        <span class="week-recap-lbl">Total all time</span>
+        <span class="week-recap-val">${totalSessions}</span>
+      </div>
+    </div>`;
+
+  /* ── Most trained muscle groups ── */
+  const freq = {};
+  S.workouts.forEach(w => {
+    const muscles = SPLIT_MUSCLES[w.split] || [];
+    muscles.forEach(m => { freq[m] = (freq[m]||0) + 1; });
+  });
+
+  const sorted = Object.entries(freq).sort((a,b) => b[1]-a[1]);
+  const max = sorted[0]?.[1] || 1;
+
+  if(!sorted.length){
+    document.getElementById('muscle-stats').innerHTML =
+      `<div class="empty"><div class="empty-ico">💪</div>
+       <div class="empty-ttl">NO DATA YET</div>
+       <div class="empty-sub">Finish sessions to see muscle stats</div></div>`;
+    return;
+  }
+
+  document.getElementById('muscle-stats').innerHTML = `
+    <div class="muscle-card">
+      ${sorted.slice(0,6).map(([name,count],i) => `
+        <div class="muscle-row">
+          <div class="muscle-rank">${i+1}</div>
+          <div class="muscle-info">
+            <div class="muscle-name">${name}</div>
+            <div class="muscle-bar-track">
+              <div class="muscle-bar-fill" style="width:${Math.round(count/max*100)}%"></div>
+            </div>
+          </div>
+          <div class="muscle-count">${count}×</div>
+        </div>`).join('')}
+    </div>`;
 }
 
 /* ══ TOAST ══ */
