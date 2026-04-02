@@ -20,6 +20,10 @@
       --bg:#0A0A0A;--surface:#131313;--card:#1C1C1C;--border:#2A2A2A;
       --text:#F2F2F2;--muted:#666;--dim:#999;--danger:#FF4444;
     }
+    [data-theme="amoled"] {
+      --bg:#000000;--surface:#0A0A0A;--card:#111111;--border:#1A1A1A;
+      --text:#F2F2F2;--muted:#666;--dim:#999;--danger:#FF4444;
+    }
     [data-theme="light"] {
       --bg:#F5F5F5;--surface:#FFFFFF;--card:#EEEEEE;--border:#DEDEDE;
       --text:#111111;--muted:#888;--dim:#666;--danger:#DD2222;
@@ -38,7 +42,9 @@
       z-index:10;position:relative;transition:background .25s}
     #hdr::after{content:"";position:absolute;bottom:-1px;left:0;right:0;height:1px;
       background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.35}
-    #logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--accent)}
+    #hdr-left{display:flex;flex-direction:column;gap:1px}
+    #logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--accent);line-height:1}
+    #hdr-greeting{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:2px;color:var(--muted)}
     #hdr-right{display:flex;align-items:center;gap:10px}
     #hdr-split{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1.5px;color:var(--muted)}
     #btn-settings{width:34px;height:34px;border-radius:50%;background:var(--surface);
@@ -47,10 +53,74 @@
       cursor:pointer;transition:all .15s;flex-shrink:0}
     #btn-settings:active{background:var(--card);color:var(--text)}
 
+
+    /* ── SIGN-IN SCREEN ── */
+    #signin-screen{position:fixed;inset:0;background:var(--bg);z-index:999;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      padding:32px 28px;gap:0;max-width:430px;margin:0 auto;}
+    #signin-screen.hidden{display:none}
+    .signin-logo{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:6px;
+      color:var(--accent);margin-bottom:8px;text-shadow:0 0 30px rgba(var(--accent-rgb),.4)}
+    .signin-tagline{font-size:11px;letter-spacing:3px;color:var(--muted);margin-bottom:48px}
+    .signin-field{width:100%;margin-bottom:14px}
+    .signin-lbl{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2.5px;
+      color:var(--muted);display:block;margin-bottom:6px}
+    .signin-input{width:100%;background:var(--surface);border:1px solid var(--border);
+      border-radius:12px;color:var(--text);font-family:'DM Mono',monospace;font-size:16px;
+      padding:14px 16px;outline:none;transition:border-color .2s;-webkit-appearance:none}
+    .signin-input:focus{border-color:var(--accent)}
+    .signin-select{width:100%;background:var(--surface);border:1px solid var(--border);
+      border-radius:12px;color:var(--text);font-family:'Bebas Neue',sans-serif;font-size:16px;
+      letter-spacing:1px;padding:14px 16px;outline:none;cursor:pointer;-webkit-appearance:none}
+    .signin-select:focus{border-color:var(--accent)}
+    .signin-btn{width:100%;margin-top:8px;padding:16px;background:var(--accent);color:#000;
+      font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;border:none;
+      border-radius:12px;cursor:pointer;transition:all .15s}
+    .signin-btn:active{filter:brightness(.88);transform:scale(.98)}
+
+    /* ── PROFILE CARD (in settings) ── */
+    .profile-card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:14px;
+      display:flex;align-items:center;gap:14px}
+    .profile-avatar{width:52px;height:52px;border-radius:50%;background:var(--accent);
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Bebas Neue',sans-serif;font-size:24px;color:#000;flex-shrink:0}
+    .profile-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.5px}
+    .profile-meta{font-size:11px;color:var(--muted);margin-top:2px}
+    .profile-goal{font-size:11px;color:var(--accent);margin-top:3px;font-family:'Bebas Neue',sans-serif;
+      letter-spacing:1px}
+
+    /* ── HISTORY EXPORT BTN ── */
+    .btn-export{display:flex;align-items:center;gap:7px;width:100%;padding:12px 16px;
+      background:var(--surface);border:1px solid var(--border);border-radius:12px;
+      color:var(--text);font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;
+      cursor:pointer;transition:all .15s;margin-bottom:14px}
+    .btn-export:active{background:var(--card)}
+
+    /* ── PRINT STYLES ── */
+    @media print{
+      body{background:#fff!important;color:#000!important;overflow:visible!important;height:auto!important}
+      #app{max-width:100%!important;height:auto!important}
+      #hdr,#tabs,#panel-workout,#panel-streak,#panel-stats,#panel-tools,
+      #settings-overlay,#settings-sheet,#toast,#confetti-canvas,#signin-screen{display:none!important}
+      #content{overflow:visible!important;height:auto!important}
+      #panel-history{display:block!important;padding:0!important}
+      .hist-body{display:block!important}
+      .hist-item{break-inside:avoid;border:1px solid #ccc!important;margin-bottom:8px!important;
+        background:#fff!important;border-radius:8px!important}
+      .hist-hdr{background:#f5f5f5!important}
+      .hist-date{color:#000!important}
+      .hist-tag{border:1px solid #999!important;color:#333!important}
+      .hist-count,.hist-ex-sets{color:#555!important}
+      .hist-ex-name{color:#000!important}
+      .hist-foot,.btn-export,.slabel{display:none!important}
+      .btn-del{display:none!important}
+      .panel.on{animation:none!important}
+    }
+
     /* ── TABS ── */
-    #tabs{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;background:var(--surface);
+    #tabs{display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);
       border-bottom:1px solid var(--border);flex-shrink:0;transition:background .25s}
-    .tab{padding:11px 4px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:13px;
+    .tab{padding:10px 2px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:11px;
       letter-spacing:1.5px;color:var(--muted);cursor:pointer;border:none;background:none;
       position:relative;transition:color .2s}
     .tab::after{content:"";position:absolute;bottom:-1px;left:14%;right:14%;height:2px;
@@ -113,26 +183,37 @@
     .btn-reset:active{background:var(--card);color:var(--text)}
 
     /* ── HISTORY ── */
+    /* ── HISTORY ── */
     .hist-item{background:var(--surface);border:1px solid var(--border);border-radius:14px;
-      margin-bottom:9px;overflow:hidden}
-    .hist-hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 14px;
-      cursor:pointer;gap:10px}
+      margin-bottom:10px;overflow:hidden;transition:border-color .2s}
+    .hist-item.open{border-color:rgba(var(--accent-rgb),.3)}
+    .hist-hdr{display:flex;align-items:center;justify-content:space-between;
+      padding:14px 16px;cursor:pointer;gap:12px}
     .hist-hdr:active{background:var(--card)}
-    .hist-meta{display:flex;align-items:center;gap:8px;flex:1;flex-wrap:wrap}
-    .hist-date{font-family:'Bebas Neue',sans-serif;font-size:16px}
-    .hist-tag{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:1.5px;padding:3px 9px;
-      border-radius:20px;border:1px solid var(--border);color:var(--muted)}
-    .hist-count{font-size:11px;color:var(--muted)}
-    .hist-chev{color:var(--muted);font-size:11px;flex-shrink:0;transition:transform .2s}
+    .hist-left{flex:1;min-width:0}
+    .hist-date{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.5px;
+      color:var(--text);margin-bottom:4px}
+    .hist-badges{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .hist-tag{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:1.5px;
+      padding:3px 9px;border-radius:20px;background:var(--ad);
+      border:1px solid rgba(var(--accent-rgb),.25);color:var(--accent)}
+    .hist-time-badge{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace}
+    .hist-count-badge{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace}
+    .hist-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+    .hist-ex-count{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent);line-height:1}
+    .hist-ex-lbl{font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:1.5px;
+      color:var(--muted);text-align:right;margin-top:2px}
+    .hist-chev{color:var(--muted);font-size:11px;transition:transform .2s}
     .hist-item.open .hist-chev{transform:rotate(90deg)}
-    .hist-body{display:none;padding:0 14px 12px;border-top:1px solid var(--border)}
+    .hist-body{display:none;border-top:1px solid var(--border)}
     .hist-item.open .hist-body{display:block}
+    .hist-ex-list{padding:8px 16px 4px}
     .hist-ex-row{display:flex;justify-content:space-between;align-items:center;
-      padding:8px 0;border-bottom:1px solid var(--border);gap:8px}
-    .hist-ex-row:last-of-type{border-bottom:none}
-    .hist-ex-name{font-family:'Bebas Neue',sans-serif;font-size:15px}
-    .hist-ex-sets{font-size:11px;color:var(--dim);white-space:nowrap}
-    .hist-foot{display:flex;justify-content:flex-end;margin-top:8px}
+      padding:8px 0;border-bottom:1px solid var(--border)}
+    .hist-ex-row:last-child{border-bottom:none}
+    .hist-ex-name{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--text)}
+    .hist-ex-sets{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;white-space:nowrap}
+    .hist-foot{display:flex;justify-content:flex-end;padding:8px 16px 12px}
     .btn-del{display:flex;align-items:center;gap:5px;padding:7px 13px;
       font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;color:var(--danger);
       background:transparent;border:1px solid rgba(255,68,68,.25);border-radius:8px;
@@ -261,6 +342,44 @@
     .muscle-count{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--accent);
       flex-shrink:0}
 
+    /* ── TOOLS ── */
+    .tool-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;
+      padding:18px;margin-bottom:10px}
+
+    /* Timer */
+    .timer-ring-wrap{position:relative;width:160px;height:160px;margin:0 auto 16px}
+    .timer-ring-svg{width:100%;height:100%;transform:rotate(-90deg)}
+    .timer-ring-bg{fill:none;stroke:var(--border);stroke-width:8}
+    .timer-ring-fg{fill:none;stroke:var(--accent);stroke-width:8;stroke-linecap:round;
+      stroke-dasharray:327;stroke-dashoffset:0;
+      transition:stroke-dashoffset .5s linear,stroke .3s;
+      filter:drop-shadow(0 0 6px rgba(var(--accent-rgb),.5))}
+    .timer-center{position:absolute;inset:0;display:flex;flex-direction:column;
+      align-items:center;justify-content:center}
+    .timer-display{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:2px;
+      color:var(--accent);line-height:1}
+    .timer-status{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:3px;
+      color:var(--muted);margin-top:4px}
+    .timer-adj-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+    .timer-adj-btn{padding:8px 12px;background:var(--card);border:1px solid var(--border);
+      border-radius:8px;color:var(--text);font-family:'Bebas Neue',sans-serif;font-size:14px;
+      cursor:pointer;transition:all .15s;flex-shrink:0}
+    .timer-adj-btn:active{background:var(--accent);color:#000;border-color:var(--accent)}
+    .timer-preset-row{display:flex;gap:5px;flex:1;justify-content:center}
+    .timer-preset{padding:6px 8px;background:var(--card);border:1px solid var(--border);
+      border-radius:8px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;
+      cursor:pointer;transition:all .15s}
+    .timer-preset:active{background:var(--accent);color:#000;border-color:var(--accent)}
+    .timer-btns{display:grid;grid-template-columns:2fr 1fr;gap:8px}
+    .timer-start-btn{padding:14px;background:var(--accent);color:#000;
+      font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;
+      border:none;border-radius:10px;cursor:pointer;transition:all .15s}
+    .timer-start-btn:active{filter:brightness(.88)}
+    .timer-reset-btn{padding:14px;background:transparent;color:var(--muted);
+      font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;
+      border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all .15s}
+    .timer-reset-btn:active{background:var(--card);color:var(--text)}
+
     #toast{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:50%;
       transform:translateX(-50%) translateY(72px);background:var(--accent);color:#000;
       font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1.5px;
@@ -279,7 +398,10 @@
 
 <div id="app">
   <header id="hdr">
-    <div id="logo">IRON LOG</div>
+    <div id="hdr-left">
+      <div id="logo">IRON LOG</div>
+      <div id="hdr-greeting">WELCOME BACK</div>
+    </div>
     <div id="hdr-right">
       <div id="hdr-split">SELECT A DAY</div>
       <div id="btn-settings" onclick="openSettings()">⚙️</div>
@@ -291,6 +413,7 @@
     <button class="tab"     onclick="switchTab('history')">HISTORY</button>
     <button class="tab"     onclick="switchTab('streak')">STREAK</button>
     <button class="tab"     onclick="switchTab('stats')">STATS</button>
+    <button class="tab"     onclick="switchTab('tools')">TOOLS</button>
   </nav>
 
   <main id="content">
@@ -312,6 +435,7 @@
 
     <!-- HISTORY -->
     <section id="panel-history" class="panel">
+      <button class="btn-export" onclick="exportPDF()">📄 EXPORT AS PDF</button>
       <div class="slabel">WORKOUT HISTORY</div>
       <div id="hist-list"></div>
     </section>
@@ -343,6 +467,40 @@
       <div id="muscle-stats"></div>
     </section>
 
+    <!-- TOOLS -->
+    <section id="panel-tools" class="panel">
+
+      <!-- REST TIMER -->
+      <div class="slabel">REST TIMER</div>
+      <div class="tool-card">
+        <div class="timer-ring-wrap">
+          <svg class="timer-ring-svg" viewBox="0 0 120 120">
+            <circle class="timer-ring-bg" cx="60" cy="60" r="52"/>
+            <circle class="timer-ring-fg" id="timer-ring-fg" cx="60" cy="60" r="52"/>
+          </svg>
+          <div class="timer-center">
+            <div class="timer-display" id="timer-display">1:30</div>
+            <div class="timer-status" id="timer-status">REST</div>
+          </div>
+        </div>
+        <div class="timer-adj-row">
+          <button class="timer-adj-btn" onclick="adjTimer(-15)">−15s</button>
+          <div class="timer-preset-row">
+            <button class="timer-preset" onclick="setTimer(60)">1:00</button>
+            <button class="timer-preset" onclick="setTimer(90)">1:30</button>
+            <button class="timer-preset" onclick="setTimer(120)">2:00</button>
+            <button class="timer-preset" onclick="setTimer(180)">3:00</button>
+          </div>
+          <button class="timer-adj-btn" onclick="adjTimer(15)">+15s</button>
+        </div>
+        <div class="timer-btns">
+          <button class="timer-start-btn" id="timer-start-btn" onclick="toggleTimer()">START</button>
+          <button class="timer-reset-btn" onclick="resetTimer()">RESET</button>
+        </div>
+      </div>
+
+    </section>
+
   </main>
 </div>
 
@@ -352,6 +510,16 @@
   <div class="sheet-handle"></div>
   <div class="sheet-title">SETTINGS</div>
 
+  <!-- Profile card -->
+  <div class="profile-card" id="profile-card">
+    <div class="profile-avatar" id="profile-avatar">?</div>
+    <div>
+      <div class="profile-name" id="profile-name-display">—</div>
+      <div class="profile-meta" id="profile-meta-display">—</div>
+      <div class="profile-goal" id="profile-goal-display">—</div>
+    </div>
+  </div>
+
   <!-- Dark / Light mode -->
   <div class="sheet-row">
     <div>
@@ -360,6 +528,18 @@
     </div>
     <label class="toggle-wrap">
       <input type="checkbox" id="toggle-theme" onchange="toggleTheme(this.checked)">
+      <div class="toggle-track"></div>
+    </label>
+  </div>
+
+  <!-- AMOLED mode -->
+  <div class="sheet-row">
+    <div>
+      <div class="sheet-row-lbl">AMOLED Black</div>
+      <div class="sheet-row-sub">Pure black — saves battery on OLED screens</div>
+    </div>
+    <label class="toggle-wrap">
+      <input type="checkbox" id="toggle-amoled" onchange="toggleAmoled(this.checked)">
       <div class="toggle-track"></div>
     </label>
   </div>
@@ -386,6 +566,31 @@
     </div>
     <div id="notif-status">Tap SET to enable daily reminder</div>
   </div>
+</div>
+
+<!-- SIGN-IN SCREEN -->
+<div id="signin-screen">
+  <div class="signin-logo">IRON LOG</div>
+  <div class="signin-tagline">YOUR PERSONAL GYM TRACKER</div>
+  <div class="signin-field">
+    <label class="signin-lbl">YOUR NAME</label>
+    <input type="text" id="signin-name" class="signin-input" placeholder="e.g. Marcus" autocomplete="off">
+  </div>
+  <div class="signin-field">
+    <label class="signin-lbl">AGE</label>
+    <input type="number" id="signin-age" class="signin-input" placeholder="e.g. 17" min="10" max="99">
+  </div>
+  <div class="signin-field">
+    <label class="signin-lbl">YOUR GOAL</label>
+    <select id="signin-goal" class="signin-select">
+      <option value="BUILD MUSCLE">BUILD MUSCLE</option>
+      <option value="LOSE FAT">LOSE FAT</option>
+      <option value="GET STRONGER">GET STRONGER</option>
+      <option value="STAY CONSISTENT">STAY CONSISTENT</option>
+      <option value="BODY RECOMP">BODY RECOMP</option>
+    </select>
+  </div>
+  <button class="signin-btn" onclick="completeSignin()">LET'S GO →</button>
 </div>
 
 <div id="toast"></div>
@@ -436,6 +641,7 @@ const SCHEDULE=[
 
 /* ══ STATE ══ */
 const S={day:0,done:{},workouts:[]};
+const P={name:'',age:'',goal:''};
 
 /* ══ INIT ══ */
 function init(){
@@ -447,6 +653,7 @@ function init(){
   const theme=localStorage.getItem("il_theme")||"dark";
   document.documentElement.dataset.theme=theme;
   document.getElementById("toggle-theme").checked=(theme==="light");
+  document.getElementById("toggle-amoled").checked=(theme==="amoled");
   updateMetaTheme();
 
   // Restore accent
@@ -466,6 +673,15 @@ function init(){
     document.getElementById("notif-status").textContent="⏰ Reminder set for "+nt;
   }
 
+  // Check sign-in
+  const profile=localStorage.getItem("il_profile");
+  if(profile){
+    Object.assign(P,JSON.parse(profile));
+    document.getElementById("signin-screen").classList.add("hidden");
+    updateProfileUI();
+  }
+  // else sign-in screen stays visible
+
   applyDayUI(S.day);
   renderExercises();
   renderHistory();
@@ -474,12 +690,13 @@ function init(){
 /* ══ TABS ══ */
 function switchTab(name){
   document.querySelectorAll(".tab").forEach((b,i)=>
-    b.classList.toggle("on",["workout","history","streak","stats"][i]===name));
+    b.classList.toggle("on",["workout","history","streak","stats","tools"][i]===name));
   document.querySelectorAll(".panel").forEach(p=>p.classList.remove("on"));
   document.getElementById("panel-"+name).classList.add("on");
   if(name==="history")renderHistory();
   if(name==="streak")renderStreak();
   if(name==="stats")renderStats();
+  if(name==="tools"){timerInit();}
 }
 
 /* ══ DAY ══ */
@@ -554,20 +771,33 @@ function renderHistory(){
     const time=d.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"});
     const rows=w.exercises.map(ex=>{
       const reps=ex.target?(ex.target.includes("×")?ex.target.split("×")[1].trim():ex.target):"";
-      return `<div class="hist-ex-row"><span class="hist-ex-name">${ex.name}</span>
-        <span class="hist-ex-sets">${ex.done}/${ex.total} · ${reps}</span></div>`;
+      return `<div class="hist-ex-row">
+        <span class="hist-ex-name">${ex.name}</span>
+        <span class="hist-ex-sets">${ex.done}/${ex.total} · ${reps}</span>
+      </div>`;
     }).join("");
     return `<div class="hist-item" id="hi-${w.id}">
       <div class="hist-hdr" onclick="toggleHist('${w.id}')">
-        <div class="hist-meta">
+        <div class="hist-left">
           <div class="hist-date">${date}</div>
-          <div class="hist-tag">${w.split}</div>
-          <div class="hist-count">${w.exercises.length} ex · ${time}</div>
-        </div><span class="hist-chev">▶</span>
+          <div class="hist-badges">
+            <span class="hist-tag">${w.split}</span>
+            <span class="hist-time-badge">${time}</span>
+          </div>
+        </div>
+        <div class="hist-right">
+          <div>
+            <div class="hist-ex-count">${w.exercises.length}</div>
+            <div class="hist-ex-lbl">EXERCISES</div>
+          </div>
+          <span class="hist-chev">▶</span>
+        </div>
       </div>
-      <div class="hist-body">${rows}
+      <div class="hist-body">
+        <div class="hist-ex-list">${rows}</div>
         <div class="hist-foot"><button class="btn-del" onclick="deleteWorkout('${w.id}')">🗑 DELETE</button></div>
-      </div></div>`;
+      </div>
+    </div>`;
   }).join("");
 }
 function toggleHist(id){document.getElementById("hi-"+id)?.classList.toggle("open");}
@@ -742,6 +972,7 @@ function toggleTheme(isLight){
   const theme=isLight?"light":"dark";
   document.documentElement.dataset.theme=theme;
   localStorage.setItem("il_theme",theme);
+  if(isLight) document.getElementById("toggle-amoled").checked=false;
   updateMetaTheme();
 }
 function updateMetaTheme(){
@@ -911,6 +1142,140 @@ function renderStats(){
           <div class="muscle-count">${count}×</div>
         </div>`).join('')}
     </div>`;
+}
+
+/* ══════════════════════════════════════════════
+   REST TIMER
+══════════════════════════════════════════════ */
+const CIRC = 2 * Math.PI * 52; // r=52
+let T = { dur:90, rem:90, running:false, ivl:null };
+
+function timerInit(){
+  const fg = document.getElementById('timer-ring-fg');
+  if(fg) fg.style.strokeDasharray = CIRC;
+  syncTimerUI();
+}
+
+function syncTimerUI(){
+  const display = document.getElementById('timer-display');
+  const fg      = document.getElementById('timer-ring-fg');
+  const status  = document.getElementById('timer-status');
+  const btn     = document.getElementById('timer-start-btn');
+  if(!display) return;
+  const m = Math.floor(T.rem/60);
+  const s = String(T.rem%60).padStart(2,'0');
+  display.textContent = `${m}:${s}`;
+  if(fg) fg.style.strokeDashoffset = CIRC * (1 - T.rem/T.dur);
+  if(btn) btn.textContent = T.running ? 'PAUSE' : (T.rem < T.dur && T.rem > 0 ? 'RESUME' : 'START');
+  if(status) status.textContent = T.running ? 'REST' : (T.rem === 0 ? 'DONE!' : 'REST');
+}
+
+function toggleTimer(){
+  if(T.running){ pauseTimer(); return; }
+  if(T.rem <= 0) resetTimer();
+  T.running = true;
+  syncTimerUI();
+  T.ivl = setInterval(()=>{
+    T.rem--;
+    syncTimerUI();
+    if(T.rem <= 0){
+      clearInterval(T.ivl); T.running = false;
+      syncTimerUI();
+      if(navigator.vibrate) navigator.vibrate([200,80,200]);
+      try{
+        const ac = new(window.AudioContext||window.webkitAudioContext)();
+        [0,.18,.36].forEach(d=>{
+          const o=ac.createOscillator(),g=ac.createGain();
+          o.connect(g);g.connect(ac.destination);
+          o.frequency.value=880;o.type='sine';
+          g.gain.setValueAtTime(.3,ac.currentTime+d);
+          g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d+.28);
+          o.start(ac.currentTime+d);o.stop(ac.currentTime+d+.3);
+        });
+      }catch(e){}
+    }
+  },1000);
+}
+
+function pauseTimer(){
+  clearInterval(T.ivl); T.running=false; syncTimerUI();
+}
+
+function resetTimer(){
+  clearInterval(T.ivl); T.running=false; T.rem=T.dur; syncTimerUI();
+}
+
+function adjTimer(sec){
+  if(T.running) return;
+  T.dur = Math.max(15, Math.min(600, T.dur+sec));
+  T.rem = T.dur;
+  syncTimerUI();
+}
+
+function setTimer(sec){
+  if(T.running) return;
+  T.dur = sec; T.rem = sec; syncTimerUI();
+}
+
+/* ══════════════════════════════════════════════
+   SIGN-IN
+══════════════════════════════════════════════ */
+function completeSignin(){
+  const name = document.getElementById("signin-name").value.trim();
+  const age  = document.getElementById("signin-age").value.trim();
+  const goal = document.getElementById("signin-goal").value;
+  if(!name){ document.getElementById("signin-name").focus(); return; }
+  P.name=name; P.age=age; P.goal=goal;
+  localStorage.setItem("il_profile",JSON.stringify(P));
+  document.getElementById("signin-screen").classList.add("hidden");
+  updateProfileUI();
+  // Personalise the header
+  document.getElementById("hdr-split").textContent = goal;
+}
+
+function updateProfileUI(){
+  if(!P.name) return;
+  const initial = P.name.charAt(0).toUpperCase();
+  document.getElementById("profile-avatar").textContent = initial;
+  document.getElementById("profile-name-display").textContent = P.name.toUpperCase();
+  document.getElementById("profile-meta-display").textContent = P.age ? P.age+" YRS OLD" : "";
+  document.getElementById("profile-goal-display").textContent = "GOAL: "+P.goal;
+  // Show name + greeting under the logo
+  document.getElementById("hdr-greeting").textContent = getGreeting()+", "+P.name.toUpperCase()+"!";
+}
+
+function getGreeting(){
+  const h=new Date().getHours();
+  if(h<12)return"GOOD MORNING";
+  if(h<17)return"GOOD AFTERNOON";
+  return"GOOD EVENING";
+}
+
+/* ══════════════════════════════════════════════
+   AMOLED MODE
+══════════════════════════════════════════════ */
+function toggleAmoled(on){
+  const theme = on ? "amoled" : "dark";
+  document.documentElement.dataset.theme = theme;
+  localStorage.setItem("il_theme", theme);
+  // Uncheck light mode toggle if enabling amoled
+  if(on) document.getElementById("toggle-theme").checked = false;
+  updateMetaTheme();
+}
+
+/* ══════════════════════════════════════════════
+   EXPORT PDF
+══════════════════════════════════════════════ */
+function exportPDF(){
+  // Make sure history is fully rendered
+  renderHistory();
+  // Open all accordion items for print
+  document.querySelectorAll(".hist-item").forEach(i=>i.classList.add("open"));
+  window.print();
+  // Close them again after
+  setTimeout(()=>{
+    document.querySelectorAll(".hist-item").forEach(i=>i.classList.remove("open"));
+  },1000);
 }
 
 /* ══ TOAST ══ */
